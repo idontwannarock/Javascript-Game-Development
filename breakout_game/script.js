@@ -18,6 +18,8 @@ var brickHeight = 20;
 var brickPadding = 10;
 var brickOffsetTop = 30;
 var brickOffsetLeft = 30;
+var score = 0;
+var lives = 3;
 
 var bricks = [];
 var c;
@@ -96,10 +98,29 @@ function collisionDetection() {
                 if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
                     dy = -dy;
                     b.status = 0;
+                    score = score + 1;
+                    if (score === brickRowCount * brickColumnCount) {
+                        window.alert("YOU WIN, CONGRADULATIONS!");
+                        document.location.reload();
+                    }
                 }
             }
         }
     }
+}
+
+function drawScore() {
+    'use strict';
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095dd";
+    ctx.fillText("Score: " + score, 8, 20);
+}
+
+function drawLives() {
+    'use strict';
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095dd";
+    ctx.fillText("Lives: " + lives, canvas.width - 65, 20);
 }
 
 function draw() {
@@ -108,6 +129,8 @@ function draw() {
     drawBricks();
     drawBall();
     drawPaddle();
+    drawScore();
+    drawLives();
     collisionDetection();
 
     if (y + dy < ballRadius) {
@@ -116,8 +139,17 @@ function draw() {
         if (x > paddleX && x < paddleX + paddleWidth) {
             dy = -dy;
         } else {
-            window.alert("GAME OVER");
-            document.location.reload();
+            lives = lives - 1;
+            if (!lives) {
+                window.alert("GAME OVER!");
+                document.location.reload();
+            } else {
+                x = canvas.width / 2;
+                y = canvas.height - 30;
+                dx = 2;
+                dy = -2;
+                paddleX = (canvas.width - paddleWidth) / 2;
+            }
         }
     }
     if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
@@ -132,6 +164,17 @@ function draw() {
 
     x += dx;
     y += dy;
+    requestAnimationFrame(draw);
 }
 
-setInterval(draw, 10);
+function mouseMoveHandler(e) {
+    'use strict';
+    var relativeX = e.clientX - canvas.offsetLeft;
+    if (relativeX > 0 + paddleWidth && relativeX < canvas.width - paddleWidth / 2) {
+        paddleX = relativeX - paddleWidth / 2;
+    }
+}
+
+document.addEventListener("mousemove", mouseMoveHandler);
+
+draw();
